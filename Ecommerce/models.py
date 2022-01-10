@@ -3,11 +3,19 @@ from django.conf import settings
 
 # Create your models here.
 
+class Catigory(models.Model):
+    name = models.CharField(max_length=100)
+
+class Label(models.Model):
+    name = models.CharField(max_length=100)
+
 class Item(models.Model):
     title = models.CharField(max_length=100)
     price = models.FloatField()
     img = models.ImageField(upload_to='items/imgs', null=True, blank=True)
     added_date = models.DateTimeField(auto_now_add=True)
+    catigory = models.ForeignKey('Catigory', on_delete=models.CASCADE)
+    label = models.ForeignKey('Label', on_delete=models.SET_NULL, null=True)
 
     class Meta:
         ordering = ['-added_date']

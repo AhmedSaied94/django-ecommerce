@@ -8,3 +8,12 @@ def items_list(request):
         'items': Item.objects.all()
     }
     return render(request, 'Ecommerce/items-list.html', context)
+
+def product_details(request, id):
+    item = Item.objects.get(id=id)
+    similar = Item.objects.filter(catigory=item.catigory)
+    context = {
+        'item': item,
+        'items': similar[0:10]
+    }
+    return render(request, 'Ecommerce/product.html', context)
