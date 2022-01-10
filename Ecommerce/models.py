@@ -28,6 +28,8 @@ class Item(models.Model):
     added_date = models.DateTimeField(auto_now_add=True)
     catigory = models.ForeignKey('Catigory', on_delete=models.CASCADE)
     description = models.TextField()
+    
+
 
     class Meta:
         ordering = ['-added_date']
@@ -49,11 +51,19 @@ class Item(models.Model):
             'id':self.id
         })
 
+    def get_add_to_card_url(self):
+        return reverse('Ecommerce:add-to-card', kwargs={
+            'id':self.id
+        })
+
     def __str__(self):
         return self.title
 
 class OrderItem(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    isOrderd = models.BooleanField(default=False)
     item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    qty = models.IntegerField(default=1)
 
     def __str__(self):
         return self.item.title
@@ -64,6 +74,8 @@ class ShopingCard(models.Model):
     items = models.ManyToManyField('OrderItem')
     start_date = models.DateTimeField(auto_now_add=True)
     orderd_date = models.DateTimeField()
+    isOrderd = models.BooleanField(default=False)
+
 
     class Meta:
         ordering = ['-orderd_date']
