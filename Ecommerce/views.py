@@ -3,11 +3,11 @@ from .models import *
 
 # Create your views here.
 
-def items_list(request):
+def products(request):
     context = {
         'items': Item.objects.all()
     }
-    return render(request, 'Ecommerce/items-list.html', context)
+    return render(request, 'Ecommerce/home.html', context)
 
 def product_details(request, id):
     item = Item.objects.get(id=id)
