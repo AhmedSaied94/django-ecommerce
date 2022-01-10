@@ -23,10 +23,11 @@ class Reviews(models.Model):
 class Item(models.Model):
     title = models.CharField(max_length=100)
     price = models.FloatField()
+    dis_price = models.FloatField(null=True, blank=True)
     img = models.ImageField(upload_to='items/imgs', null=True, blank=True)
     added_date = models.DateTimeField(auto_now_add=True)
     catigory = models.ForeignKey('Catigory', on_delete=models.CASCADE)
-    
+    description = models.TextField()
 
     class Meta:
         ordering = ['-added_date']
@@ -45,7 +46,7 @@ class Item(models.Model):
     
     def get_absolute_url(self):
         return reverse('Ecommerce:product-details', kwargs={
-            'slug':self.id
+            'id':self.id
         })
 
     def __str__(self):

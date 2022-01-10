@@ -6,5 +6,5 @@ app_name = 'Ecommerce'
 
 urlpatterns = [
     path('', products, name='items-list'),
-    path('product/<slug>/', product_details, name='product-details')
+    path('product/<int:id>/', product_details, name='product-details')
 ]
