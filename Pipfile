@@ -15,6 +15,7 @@ django-crispy-forms = "*"
 django-social-auth = "*"
 django-extensions = "*"
 django-allauth = "*"
+django-mathfilters = "*"
 
 [dev-packages]
 

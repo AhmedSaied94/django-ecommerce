@@ -1,3 +1,4 @@
+{% load mathfilters %}
 <!-- HEADER -->
 <header>
     <!-- TOP HEADER -->
@@ -50,51 +51,52 @@
 
                 <!-- ACCOUNT -->
                 <div class="col-md-3 clearfix">
-                    <div class="header-ctn">
+                    
+                    <div class="header-ctn" {% if not user.is_authenticated %} style="width: 100%;"  {% else %} style="display:flex" {% endif %}>
+                        {% if user.is_authenticated %}
                         <!-- Wishlist -->
                         <div>
-                            <a href="#">
+                            <a href="#" style="width: auto;">
                                 <i class="fa fa-heart-o"></i>
                                 <span>Your Wishlist</span>
                                 <div class="qty">2</div>
                             </a>
                         </div>
+
                         <!-- /Wishlist -->
 
                         <!-- Cart -->
                         <div class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+                            <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" style="width: auto;">
                                 <i class="fa fa-shopping-cart"></i>
                                 <span>Your Cart</span>
-                                <div class="qty">3</div>
+                                <div class="qty">{{user.shopingcard_set.first.items.all.count}}</div>
                             </a>
                             <div class="cart-dropdown">
                                 <div class="cart-list">
-                                    <div class="product-widget">
-                                        <div class="product-img">
-                                            <img src="./img/product01.png" alt="">
-                                        </div>
-                                        <div class="product-body">
-                                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                            <h4 class="product-price"><span class="qty">1x</span>$980.00</h4>
-                                        </div>
-                                        <button class="delete"><i class="fa fa-close"></i></button>
-                                    </div>
+                                    {% for it in user.shopingcard_set.first.items.all %}
 
                                     <div class="product-widget">
                                         <div class="product-img">
-                                            <img src="./img/product02.png" alt="">
+                                            <img src="{{it.item.img.url}}" alt="">
                                         </div>
                                         <div class="product-body">
-                                            <h3 class="product-name"><a href="#">product name goes here</a></h3>
-                                            <h4 class="product-price"><span class="qty">3x</span>$980.00</h4>
+                                            <h3 class="product-name"><a href="#">{{it.item.title}}</a></h3>
+                                            {% if it.item.dis_price %}
+                                                <h4 class="product-price order-item-price"><span class="qty">{{it.qty}}X</span>{{it.qty|mul:it.item.dis_price}}</h4>
+                                            {% else %}
+                                                <h4 class="product-price order-item-price"><span class="qty">{{it.qty}}X</span>{{it.qty|mul:it.item.price}}</h4>
+                                            {% endif %}
                                         </div>
-                                        <button class="delete"><i class="fa fa-close"></i></button>
+                                        <a class="delete" href="{{it.item.get_remove_url_all}}"><i class="fa fa-close"></i></a>
                                     </div>
+                                    {% endfor %}
+
+
                                 </div>
                                 <div class="cart-summary">
-                                    <small>3 Item(s) selected</small>
-                                    <h5>SUBTOTAL: $2940.00</h5>
+                                    <small id="total-items">Item(s) selected</small>
+                                    <h5 id="total">SUBTOTAL: $2940.00</h5>
                                 </div>
                                 <div class="cart-btns">
                                     <a href="#">View Cart</a>
@@ -103,7 +105,18 @@
                             </div>
                         </div>
                         <!-- /Cart -->
-
+                        <div>
+                            <a href="{% url 'account_logout' %}" style="width: auto;">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>logout</span>
+                            </a>
+                        </div>
+                        {% else %}
+                            <div style="width: 100%; display: flex; justify-content: space-evenly; ">
+                                <a class="primary-btn" href="{% url 'account_signup' %}" style="display: inline; padding: 11px 20px; width: auto; height: fit-content; background-color: #fff; color: #333; font-size: 0.9em;">Sign up</a>
+                                <a class="primary-btn" href="{% url 'account_login' %}" style="display: inline; padding: 11px 20px; width: auto; height: fit-content; font-size: 0.9em;">Log in</a>
+                            </div>
+                        {% endif %}
                         <!-- Menu Toogle -->
                         <div class="menu-toggle">
                             <a href="#">
@@ -122,4 +135,19 @@
     </div>
     <!-- /MAIN HEADER -->
 </header>
+<script>
+    var products = document.getElementsByClassName('order-item-price')
+    var total = 0
+    var totalItems = 0
+    for(i of products){
+        var total_index = i.innerHTML.lastIndexOf('>')
+        var total_itemIndex = i.innerHTML.indexOf('>')
+        total += Number(i.innerHTML.slice(total_index+1))
+        totalItems += Number(i.innerHTML[total_itemIndex+1])
+        console.log(totalItems)
+    }
+    document.querySelector('#total').innerHTML = total
+    totalItemsEle = document.querySelector('#total-items')
+    totalItemsEle.innerHTML = `${totalItems} ${totalItemsEle.innerHTML}`
+</script>
 <!-- /HEADER -->

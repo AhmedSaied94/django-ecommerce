@@ -23,7 +23,9 @@
 		<link type="text/css" rel="stylesheet" href="{% static 'main/css/nouislider.min.css' %}"/>
 
 		<!-- Font Awesome Icon -->
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 		<link rel="stylesheet" href="{% static 'main/css/font-awesome.min.css' %}">
+		
 
 		<!-- Custom stlylesheet -->
 		<link type="text/css" rel="stylesheet" href="{% static 'main/css/style.css' %}"/>
@@ -34,18 +36,32 @@
 		  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 		  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
-
+		<style>
+			*{
+				scroll-behavior: smooth;
+			}
+		</style>
     </head>
 	<body>
 
         {% include 'main/header.html' %}
 
         {% include 'main/navbar.html' %}
+		{% block body %}
 
+		{% if messages %}
+		<div>
+			{% for message in messages %}
+			<div class="alert alert-info" role="alert">{{message}}</div>
+			{% endfor %}
+		</div>
+		{% endif %}
         {% block main %}
 
         {% endblock %}
-
+		{% endblock %}
+		{% block extra_body %}
+		{% endblock %}
         {% include 'main/footer.html' %}
 
         <script src="{% static 'main/js/jquery.min.js' %}"></script>

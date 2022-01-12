@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
-# Create your models here.
+from django import template
+
 
 class Catigory(models.Model):
     name = models.CharField(max_length=100)
@@ -12,7 +13,7 @@ class Catigory(models.Model):
 class Reviews(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     text = models.TextField()
-    rating = models.CharField(max_length=1)
+    rating = models.IntegerField()
     item = models.ForeignKey('Item', on_delete=models.CASCADE)
     date = models.DateTimeField(auto_now_add=True)
 
@@ -36,14 +37,14 @@ class Item(models.Model):
     
     @property
     def rating(self):
-        if not self.Review:
+        if self.reviews_set.all().count() <= 0:
             rating = 'N/A'
         else:
-            reviews = self.Review_set.all
+            reviews = self.reviews_set.all()
             total_rate = 0
             for i in reviews:
                 total_rate += int(i.rating)
-            rating = str(total_rate / len(reviews))
+            rating = total_rate / len(reviews)
         return rating
     
     def get_absolute_url(self):
@@ -56,6 +57,12 @@ class Item(models.Model):
             'id':self.id
         })
 
+    def get_remove_url_all(self):
+        return reverse('Ecommerce:remove-from-card', kwargs={'id':self.id, 'num':'all'})
+
+    def get_remove_url_one(self):
+        return reverse('Ecommerce:remove-from-card', kwargs={'id':self.id, 'num':'one'})
+
     def __str__(self):
         return self.title
 
@@ -66,7 +73,10 @@ class OrderItem(models.Model):
     qty = models.IntegerField(default=1)
 
     def __str__(self):
-        return self.item.title
+        return f"{self.qty} of {self.item.title}"
+
+
+
 
 
 class ShopingCard(models.Model):

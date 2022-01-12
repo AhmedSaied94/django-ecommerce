@@ -39,13 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
-    'accounts',
+
     'Ecommerce',
 
     'django_extensions',
     'django_countries',
     'debug_toolbar',
     'crispy_forms',
+    'mathfilters',
     
     'allauth',
     'allauth.account',
@@ -195,3 +196,5 @@ EMAIL_USE_TLS =True
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
