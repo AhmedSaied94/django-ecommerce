@@ -1,0 +1,125 @@
+{% extends 'main/base.html' %}
+{% load mathfilters %}
+{% block title %} Cart Summury {% endblock %}
+
+{% block main %}
+
+<!-- BREADCRUMB -->
+<div id="breadcrumb" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="breadcrumb-header">Cart Summury</h3>
+                <ul class="breadcrumb-tree">
+                    <li><a href="/">Home</a></li>
+                    <li class="active">Cart</li>
+                </ul>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /BREADCRUMB -->
+
+<!-- SECTION -->
+<div class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <table class="table table-hover">
+                <thead>
+                    <th>#</th>
+                    <th>Item</th>
+                    <th>Price</th>
+                    <th>QTY</th>
+                    <th>Total</th>
+                </thead>
+                {% if cart %}
+                    {% for order_item in cart.items.all %}
+                        <tr>
+                            <th>{{forloop.counter}}</th>
+                            <td>{{ order_item.item.title }}</td>
+                            <td>{{ order_item.item.price }}</td>
+                            <td>
+                                <a href="{{ order_item.item.get_remove_url_one }}" style="margin-right: 1rem;"><i class="fas fa-minus"></i></a>
+                                {{ order_item.qty }}
+                                <a href="{{order_item.item.get_add_to_card_url}}" style="margin-left: 1rem;"><i class="fas fa-plus"></i></a>
+                            </td>
+                            {% if order_item.item.dis_price %}
+                                <td>{{ order_item.get_item_total_price }} <span class="label label-primary">Saving {{order_item.qty|mul:order_item.item.price|sub:order_item.get_item_total_price}}</span> <a href="{{ order_item.item.get_remove_url_all }}" style="float: right; margin-right: 2rem;"><i class="fas fa-trash"></i></a></td>
+                            {% else %}
+                                <td>{{ order_item.get_item_total_price }} <a href="{{ order_item.item.get_remove_url_all }}" style="float: right; margin-right: 2rem;"><i class="fas fa-trash"></i></a></td>
+                            {% endif %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">Your cart is empty</td>
+                        </tr>
+                    {% endfor %}
+                    {% if cart.items.all.count > 0 %}
+                        <tr>
+                            <td colspan="4" style="text-align: right;"><strong>Order Total</strong></td>
+                            <td><strong>{{ cart.get_total_cart_price }}</strong></td>
+                        </tr>
+                    {% endif %}
+                {% else %}
+                    <tr>
+                        <td colspan="5">You don't have an active cart</td>
+                    </tr>
+                {% endif %}
+            </table>
+            <div style="width: 100%; display: flex; justify-content: flex-end;">
+                <a href="/" class="btn btn-default">Continue Shopping</a>
+                {% if cart %}
+                    <a href="#" class="btn btn-primary" {% if cart.items.all.count == 0 %} style="margin-left: 0.5rem; pointer-events: none;" {% else %} style="margin-left: 0.5rem;" {% endif %}>Go to checkout</a>
+                {% endif %}
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /SECTION -->
+
+<!-- NEWSLETTER -->
+<div id="newsletter" class="section">
+    <!-- container -->
+    <div class="container">
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="newsletter">
+                    <p>Sign Up for the <strong>NEWSLETTER</strong></p>
+                    <form>
+                        <input class="input" type="email" placeholder="Enter Your Email">
+                        <button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
+                    </form>
+                    <ul class="newsletter-follow">
+                        <li>
+                            <a href="#"><i class="fa fa-facebook"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-twitter"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-instagram"></i></a>
+                        </li>
+                        <li>
+                            <a href="#"><i class="fa fa-pinterest"></i></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+    </div>
+    <!-- /container -->
+</div>
+<!-- /NEWSLETTER -->
+
+
+{% endblock %}

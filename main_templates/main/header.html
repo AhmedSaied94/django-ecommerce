@@ -56,10 +56,12 @@
                         {% if user.is_authenticated %}
                         <!-- Wishlist -->
                         <div>
-                            <a href="#" style="width: auto;">
+                            <a href="{% url 'Ecommerce:wishlist' %}" style="width: auto;">
                                 <i class="fa fa-heart-o"></i>
                                 <span>Your Wishlist</span>
-                                <div class="qty">2</div>
+                                {% if user.wishlist_set.first.items.all.count > 0 %}
+                                    <div class="qty">{{user.wishlist_set.first.items.all.count}}</div>
+                                {% endif %}
                             </a>
                         </div>
 
@@ -70,7 +72,9 @@
                             <a class="dropdown-toggle" data-toggle="dropdown" aria-expanded="true" style="width: auto;">
                                 <i class="fa fa-shopping-cart"></i>
                                 <span>Your Cart</span>
-                                <div class="qty">{{user.shopingcard_set.first.items.all.count}}</div>
+                                {% if user.shopingcard_set.first.items.all.count > 0 %}
+                                    <div class="qty">{{user.shopingcard_set.first.items.all.count}}</div>
+                                {% endif %}
                             </a>
                             <div class="cart-dropdown">
                                 <div class="cart-list">
@@ -99,7 +103,7 @@
                                     <h5 id="total">SUBTOTAL: $2940.00</h5>
                                 </div>
                                 <div class="cart-btns">
-                                    <a href="#">View Cart</a>
+                                    <a href="{% url 'Ecommerce:cart' %}">View Cart</a>
                                     <a href="#">Checkout  <i class="fa fa-arrow-circle-right"></i></a>
                                 </div>
                             </div>

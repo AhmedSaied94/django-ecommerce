@@ -107,8 +107,11 @@
                     </div>
 
                     <ul class="product-btns">
-                        <li><a href="#"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
-                        <li><a href="#"><i class="fa fa-exchange"></i> add to compare</a></li>
+                        {% if not wishlist_exist %}
+                            <li><a href="{{item.get_add_to_wishlist_url}}"><i class="fa fa-heart-o"></i> add to wishlist</a></li>
+                        {% else %}
+                            <li><a href="{{item.get_remove_from_wishlist_url}}"><i class="fa fa-heart-o"></i> remove from wishlist</a></li>
+                        {% endif %}
                     </ul>
 
                     <ul class="product-links">
@@ -222,15 +225,28 @@
                                                         <p>{{r.text}}</p>
                                                     </div>
                                                 </li>
+                                            {% empty %}
+                                                <li>
+                                                    <div class="review-body">
+                                                        <p>there's no reviews for this item</p>
+                                                    </div>
+                                                </li>
                                             {% endfor %}
                                         
                                         </ul>
+                                        
                                         <ul class="reviews-pagination">
-                                            <li class="active">1</li>
-                                            <li><a href="#">2</a></li>
-                                            <li><a href="#">3</a></li>
-                                            <li><a href="#">4</a></li>
-                                            <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
+                                            {% if item.reiviews_set.all.count > 0 %}
+                                                <li class="active">1</li>
+                                            {% endif %}
+                                            {% for num in item.reviews_set.all %}
+                                                {% if forloop.counter0|mod:3 == 0 and forloop.counter0|div:3 > 1 and forloop.counter0 < 12 %}
+                                                    <li><a href="#">{{forloop.counter0|div:3|add:1}}</a></li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if item.reiviews_set.all.count > 12 %}
+                                                <li><a href="#"><i class="fa fa-angle-right"></i></a></li>
+                                            {% endif %}
                                         </ul>
                                     </div>
                                 </div>
