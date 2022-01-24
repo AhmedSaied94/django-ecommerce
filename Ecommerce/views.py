@@ -3,8 +3,12 @@ from django.shortcuts import get_object_or_404, render, redirect
 from .models import *
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import *
+from django.conf import settings
+import stripe
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
 # Create your views here.
 
 def products(request):
@@ -39,7 +43,6 @@ def add_to_card(request, id):
         user=request.user,
         isOrderd=False
     )
-    order_date = timezone.now()
     cur_order = ShopingCard.objects.filter(user=request.user, isOrderd=False)
     if cur_order.exists():
         order = cur_order.first()
@@ -49,7 +52,7 @@ def add_to_card(request, id):
         else:
             order.items.add(order_item)
     else:
-        order = ShopingCard.objects.create(user=request.user, orderd_date=order_date)
+        order = ShopingCard.objects.create(user=request.user)
         order.items.add(order_item)
     return redirect(request.META['HTTP_REFERER'], id=id)
             
@@ -129,8 +132,9 @@ def checkout(request):
     form = CheckoutForm()
     if request.method == 'POST':
         form = CheckoutForm(data=request.POST)
-        order = OrderItem.objects.filter(user=request.user, isOrderd=False)
-        if order.exists():
+        order_qs = ShopingCard.objects.filter(user=request.user, isOrderd=False)
+        if order_qs.exists():
+            order = order_qs[0]
             if form.is_valid():
                 data = form.cleaned_data
                 billing_address = BillingAddress(
@@ -143,9 +147,53 @@ def checkout(request):
                     notes = data['notes']
                 )
                 billing_address.save()
-                order[0].billing_address = billing_address
-                order['0'].save()
-                return redirect('Ecommerce:checkout')
+                order.billing_address = billing_address
+                order.save()
+                return redirect('Ecommerce:create-payment')
         return redirect('Ecommerce:cart')
     return render(request, 'Ecommerce/checkout.html', context={'form':form})
-    
+
+@login_required
+@csrf_exempt
+def create_payment(request):
+    order = ShopingCard.objects.get(user=request.user, isOrderd=False)
+    context = {
+        'public_key':settings.STRIPE_PUBLIC_KEY,
+        'order':order
+    }
+    if request.method == 'POST':
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        try:
+            # Create a PaymentIntent with the order amount and currency
+            intent = stripe.PaymentIntent.create(
+                amount=int(order.get_total_cart_price() * 100),
+                currency='usd',
+                automatic_payment_methods={
+                    'enabled': True,
+                },
+            )
+            return JsonResponse({
+                'clientSecret': intent['client_secret'],
+                # 'intent_id':intent['id']
+            })
+        except Exception as e:
+            print(str(e))
+            return JsonResponse({'error':str(e)})
+    return render(request, 'Ecommerce/payment.html', context)
+
+def payment_success(request):
+    order = ShopingCard.objects.get(user=request.user, isOrderd=False)
+    intent_id = request.GET.get('payment_intent','')
+    payment = Payment()
+    payment.user = request.user
+    payment.intent_id = intent_id
+    payment.amount = order.get_total_cart_price() * 100
+    payment.save()
+    order.payment = payment
+    for order_item in order.items.all():
+        order_item.isOrderd = True
+        order.orderd_date = payment.date
+        order_item.save()
+    order.isOrderd = True
+    order.save()
+    return redirect('Ecommerce:items-list')

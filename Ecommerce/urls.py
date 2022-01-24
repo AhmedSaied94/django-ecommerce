@@ -14,5 +14,7 @@ urlpatterns = [
     path('remove-from-wishlist/<int:id>/', remove_from_wishlist, name='remove-from-wishlist'),
     path('wishlist/', wishlist_items, name='wishlist'),
     path('cart/', cart_summury, name='cart'),
-    path('checkout/', checkout, name='checkout')
+    path('checkout/', checkout, name='checkout'),
+    path('create-payment-intent/', create_payment, name='create-payment'),
+    path('payment-success', payment_success, name='payment_succsess')
 ]

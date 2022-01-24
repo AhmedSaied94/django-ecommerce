@@ -98,13 +98,14 @@ class ShopingCard(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     items = models.ManyToManyField('OrderItem')
     start_date = models.DateTimeField(auto_now_add=True)
-    orderd_date = models.DateTimeField()
+    orderd_date = models.DateTimeField(null=True, blank=True)
     isOrderd = models.BooleanField(default=False)
     billing_address = models.ForeignKey('BillingAddress', on_delete=models.SET_NULL, null=True, blank=True)
+    payment = models.ForeignKey('Payment', on_delete=models.SET_NULL, null=True, blank=True)
 
 
     class Meta:
-        ordering = ['-orderd_date']
+        ordering = ['-start_date']
     
     def __str__(self):
         return self.user.username
@@ -134,3 +135,12 @@ class BillingAddress(models.Model):
 
     def __str__(self):
         return self.user.username
+
+class Payment(models.Model):
+    intent_id = models.CharField(max_length=255)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    amount = models.FloatField()
+    date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} {self.intent_id}"

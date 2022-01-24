@@ -75,7 +75,7 @@
             <div style="width: 100%; display: flex; justify-content: flex-end;">
                 <a href="/" class="btn btn-default">Continue Shopping</a>
                 {% if cart %}
-                    <a href="#" class="btn btn-primary" {% if cart.items.all.count == 0 %} style="margin-left: 0.5rem; pointer-events: none;" {% else %} style="margin-left: 0.5rem;" {% endif %}>Go to checkout</a>
+                    <a href="{% url 'Ecommerce:checkout' %}" class="btn btn-primary" {% if cart.items.all.count == 0 %} style="margin-left: 0.5rem; pointer-events: none;" {% else %} style="margin-left: 0.5rem;" {% endif %}>Go to checkout</a>
                 {% endif %}
             </div>
         </div>
