@@ -130,11 +130,12 @@ def cart_summury(request):
 @login_required
 def checkout(request):
     form = CheckoutForm()
-    if request.method == 'POST':
-        form = CheckoutForm(data=request.POST)
-        order_qs = ShopingCard.objects.filter(user=request.user, isOrderd=False)
-        if order_qs.exists():
-            order = order_qs[0]
+    order_qs = ShopingCard.objects.filter(user=request.user, isOrderd=False)
+    if order_qs.exists():
+        order = order_qs[0]
+        if request.method == 'POST':
+            form = CheckoutForm(data=request.POST)
+
             if form.is_valid():
                 data = form.cleaned_data
                 billing_address = BillingAddress(
@@ -150,8 +151,8 @@ def checkout(request):
                 order.billing_address = billing_address
                 order.save()
                 return redirect('Ecommerce:create-payment')
-        return redirect('Ecommerce:cart')
-    return render(request, 'Ecommerce/checkout.html', context={'form':form})
+        return render(request, 'Ecommerce/checkout.html', context={'form':form, 'order':order})
+    return redirect('Ecommerce:cart')
 
 @login_required
 @csrf_exempt
