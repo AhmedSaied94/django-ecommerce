@@ -1,4 +1,5 @@
 from distutils import log
+from email import message
 from django.shortcuts import get_object_or_404, render, redirect
 from .models import *
 from django.utils import timezone
@@ -8,17 +9,21 @@ from django.conf import settings
 import stripe
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 
 # Create your views here.
+
 
 def products(request):
     context = {
         'items': Item.objects.all(),
-        'user':request.user
+        'user': request.user
     }
     return render(request, 'Ecommerce/home.html', context)
 
+
 def product_details(request, id):
+    print(request.path_info)
     item = Item.objects.get(id=id)
     try:
         wishlist_exist = request.user.wishlist_set.first().items.filter(id=id).exists()
@@ -28,12 +33,13 @@ def product_details(request, id):
     context = {
         'item': item,
         'items': similar[0:10],
-        'user':request.user,
-        'range':range(5),
-        'wishlist_exist':wishlist_exist
+        'user': request.user,
+        'range': range(5),
+        'wishlist_exist': wishlist_exist
     }
     print(item.rating)
     return render(request, 'Ecommerce/product.html', context)
+
 
 @login_required
 def add_to_card(request, id):
@@ -55,7 +61,7 @@ def add_to_card(request, id):
         order = ShopingCard.objects.create(user=request.user)
         order.items.add(order_item)
     return redirect(request.META['HTTP_REFERER'], id=id)
-            
+
 
 def remove_from_card(request, id, num):
     item = get_object_or_404(Item, id=id)
@@ -79,6 +85,7 @@ def remove_from_card(request, id, num):
     print(request.path_info)
     return redirect(request.META['HTTP_REFERER'], id=id)
 
+
 @login_required
 def add_to_wishlist(request, id):
     item = get_object_or_404(Item, id=id)
@@ -86,17 +93,19 @@ def add_to_wishlist(request, id):
     if cur_wishlist.exists():
         wishlist = cur_wishlist[0]
     else:
-        wishlist = WishList.objects.create(user= request.user,)
-    wishlist.items.add(item)    
+        wishlist = WishList.objects.create(user=request.user,)
+    wishlist.items.add(item)
     return redirect(request.META['HTTP_REFERER'], id=id)
+
 
 def remove_from_wishlist(request, id):
     item = get_object_or_404(Item, id=id)
     cur_wishlist = WishList.objects.filter(user=request.user)
     if cur_wishlist.exists:
-        wishlist= cur_wishlist[0]
+        wishlist = cur_wishlist[0]
         wishlist.items.remove(item)
         return redirect(request.META['HTTP_REFERER'], id=id)
+
 
 @login_required
 def wishlist_items(request):
@@ -106,10 +115,11 @@ def wishlist_items(request):
     except:
         items = False
     context = {
-        'items':items,
-        'user':request.user
+        'items': items,
+        'user': request.user
     }
     return render(request, 'Ecommerce/wishlist.html', context)
+
 
 @login_required
 def cart_summury(request):
@@ -118,11 +128,11 @@ def cart_summury(request):
     if qs.exists():
         order = qs[0]
         context = {
-            'cart':order
+            'cart': order
         }
     else:
         context = {
-            'cart':False
+            'cart': False
         }
     return render(request, 'Ecommerce/cart.html', context)
 
@@ -131,7 +141,7 @@ def cart_summury(request):
 def checkout(request):
     form = CheckoutForm()
     order_qs = ShopingCard.objects.filter(user=request.user, isOrderd=False)
-    if order_qs.exists():
+    if order_qs.exists() and order_qs[0].items.all().count() > 0:
         order = order_qs[0]
         if request.method == 'POST':
             form = CheckoutForm(data=request.POST)
@@ -139,28 +149,29 @@ def checkout(request):
             if form.is_valid():
                 data = form.cleaned_data
                 billing_address = BillingAddress(
-                    user = request.user,
-                    address = data['address'],
-                    city = data['city'],
-                    country = data['country'],
-                    zip = data['zip'],
-                    telephone = data['telephone'],
-                    notes = data['notes']
+                    user=request.user,
+                    address=data['address'],
+                    city=data['city'],
+                    country=data['country'],
+                    zip=data['zip'],
+                    telephone=data['telephone'],
+                    notes=data['notes']
                 )
                 billing_address.save()
                 order.billing_address = billing_address
                 order.save()
                 return redirect('Ecommerce:create-payment')
-        return render(request, 'Ecommerce/checkout.html', context={'form':form, 'order':order})
+        return render(request, 'Ecommerce/checkout.html', context={'form': form, 'order': order})
     return redirect('Ecommerce:cart')
+
 
 @login_required
 @csrf_exempt
 def create_payment(request):
     order = ShopingCard.objects.get(user=request.user, isOrderd=False)
     context = {
-        'public_key':settings.STRIPE_PUBLIC_KEY,
-        'order':order
+        'public_key': settings.STRIPE_PUBLIC_KEY,
+        'order': order
     }
     if request.method == 'POST':
         stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -179,12 +190,13 @@ def create_payment(request):
             })
         except Exception as e:
             print(str(e))
-            return JsonResponse({'error':str(e)})
+            return JsonResponse({'error': str(e)})
     return render(request, 'Ecommerce/payment.html', context)
+
 
 def payment_success(request):
     order = ShopingCard.objects.get(user=request.user, isOrderd=False)
-    intent_id = request.GET.get('payment_intent','')
+    intent_id = request.GET.get('payment_intent', '')
     payment = Payment()
     payment.user = request.user
     payment.intent_id = intent_id
@@ -197,4 +209,5 @@ def payment_success(request):
         order_item.save()
     order.isOrderd = True
     order.save()
+    messages.add_message(request, messages.INFO, 'Order Payed Successfully')
     return redirect('Ecommerce:items-list')

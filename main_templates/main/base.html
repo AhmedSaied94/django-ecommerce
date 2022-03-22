@@ -13,7 +13,7 @@
 		<link href="https://fonts.googleapis.com/css?family=Montserrat:400,500,700" rel="stylesheet">
 
 		<!-- Bootstrap -->
-		<link type="text/css" rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}"/>
+		<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css"/>
 
 		<!-- Slick -->
 		<link type="text/css" rel="stylesheet" href="{% static 'main/css/slick.css' %}"/>
@@ -61,8 +61,9 @@
 	<body>
 
         {% include 'main/header.html' %}
-
-        {% include 'main/navbar.html' %}
+		{% if request.path_info != '/accounts/login/' and request.path_info != '/accounts/signup/' %}
+        	{% include 'main/navbar.html' %}
+		{% endif %}
 		{% block body %}
 
 		{% if messages %}
